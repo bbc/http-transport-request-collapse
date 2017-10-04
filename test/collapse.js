@@ -34,8 +34,9 @@ function toLowerCase() {
 }
 
 function makeRequests(n) {
-  const client = HttpTransport.createClient(collapse(new HttpTransport.defaultTransport))
-    .useGlobal(toError());
+  const client = HttpTransport.createBuilder(collapse(new HttpTransport.defaultTransport))
+    .use(toError())
+    .createClient();
 
   const pending = [];
   for (let i = 0; i < n; ++i) {
@@ -50,7 +51,7 @@ function assertAllFailed(pending) {
   pending.forEach((result) => {
     result
       .then(assert.fail)
-      .catch(noop)
+      .catch(noop);
   });
 }
 
@@ -70,8 +71,9 @@ describe('Request collasing', () => {
       .reply(200, simpleResponseBody);
 
     const transport = collapse(new HttpTransport.defaultTransport);
-    const client = HttpTransport.createClient(transport)
-      .useGlobal(toError());
+    const client = HttpTransport.createBuilder(transport)
+      .use(toError())
+      .createClient();
 
     const pending = makeRequests(client, 1000);
 
@@ -93,8 +95,9 @@ describe('Request collasing', () => {
       .reply(200, simpleResponseBody);
 
     const transport = collapse(new HttpTransport.defaultTransport);
-    const client = HttpTransport.createClient(transport)
-      .useGlobal(toError());
+    const client = HttpTransport.createBuilder(transport)
+      .use(toError())
+      .createClient();
 
     const pending1 = client
       .get(url)
@@ -138,7 +141,7 @@ describe('Request collasing', () => {
       .reply(200, simpleResponseBody);
 
     const transport = collapse(new HttpTransport.defaultTransport);
-    const client = HttpTransport.createClient(transport).useGlobal(toError());
+    const client = HttpTransport.createClient(transport).use(toError());
 
     assert.equal(transport.getInflightCount(), 0);
 
@@ -175,7 +178,7 @@ describe('Request collasing', () => {
       .reply(200, simpleResponseBody2);
 
     const transport = collapse(new HttpTransport.defaultTransport);
-    const client = HttpTransport.createClient(transport).useGlobal(toError());
+    const client = HttpTransport.createClient(transport).use(toError());
 
     const requests = [];
     const pending1 = client
