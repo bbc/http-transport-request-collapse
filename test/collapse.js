@@ -33,11 +33,13 @@ function toLowerCase() {
   };
 }
 
-function makeRequests(n) {
-  const client = HttpTransport.createBuilder(collapse(new HttpTransport.defaultTransport))
+function createClient(transport) {
+  return HttpTransport.createBuilder(transport || new HttpTransport.defaultTransport)
     .use(toError())
     .createClient();
+}
 
+function makeRequests(client, n) {
   const pending = [];
   for (let i = 0; i < n; ++i) {
     pending.push(client
@@ -71,11 +73,7 @@ describe('Request collasing', () => {
       .reply(200, simpleResponseBody);
 
     const transport = collapse(new HttpTransport.defaultTransport);
-    const client = HttpTransport.createBuilder(transport)
-      .use(toError())
-      .createClient();
-
-    const pending = makeRequests(client, 1000);
+    const pending = makeRequests(createClient(transport), 1000);
 
     return Promise.all(pending)
       .then((results) => {
@@ -141,9 +139,9 @@ describe('Request collasing', () => {
       .reply(200, simpleResponseBody);
 
     const transport = collapse(new HttpTransport.defaultTransport);
-    const client = HttpTransport.createClient(transport).use(toError());
+    const client = createClient(transport);
 
-    assert.equal(transport.getInflightCount(), 0);
+    assert.equal(transport.getInflightCount(), 0); // ensure empty on start
 
     const pending = client
       .get(url)
@@ -160,7 +158,7 @@ describe('Request collasing', () => {
       .times(1)
       .reply(500, simpleResponseBody);
 
-    const pending = makeRequests(100);
+    const pending = makeRequests(createClient(), 100);
 
     return Promise.all(pending)
       .then(assert.ifError)
@@ -178,7 +176,7 @@ describe('Request collasing', () => {
       .reply(200, simpleResponseBody2);
 
     const transport = collapse(new HttpTransport.defaultTransport);
-    const client = HttpTransport.createClient(transport).use(toError());
+    const client = createClient(transport);
 
     const requests = [];
     const pending1 = client
