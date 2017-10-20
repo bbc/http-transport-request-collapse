@@ -9,7 +9,6 @@ const collapse = require('../lib/collapse');
 
 const url = 'http://www.example.com/';
 const host = 'http://www.example.com';
-const api = nock(host);
 const path = '/';
 
 const simpleResponseBody = 'Illegitimi non carborundum';
@@ -41,10 +40,18 @@ function createClient(transport) {
     .createClient();
 }
 
-function makeRequests(client, n) {
+function buildRequest(client, method) {
+  method = method.toLowerCase();
+
+  return () => {
+    return client[method](url).asResponse();
+  };
+}
+
+function makeRequests(request, n) {
   const pending = [];
   for (let i = 0; i < n; ++i) {
-    pending.push(client.get(url).asResponse());
+    pending.push(request());
   }
   return pending;
 }
@@ -55,11 +62,10 @@ function assertAllFailed(pending) {
   });
 }
 
-describe('Request collasing', () => {
+describe('Request collapsing', () => {
   beforeEach(() => {
     nock.disableNetConnect();
-    nock.cleanAll();
-    api
+    nock(host)
       .get(path)
       .reply(200, simpleResponseBody)
       .defaultReplyHeaders({
@@ -67,15 +73,20 @@ describe('Request collasing', () => {
       });
   });
 
+  afterEach(() => {
+    nock.cleanAll();
+  });
+
   it('suppresses duplicated requests at a given time', () => {
-    api
+    nock(host)
       .get(path)
       .times(1)
       .socketDelay(2000)
       .reply(200, simpleResponseBody);
 
     const transport = collapse(new HttpTransport.defaultTransport());
-    const pending = makeRequests(createClient(transport), 1000);
+    const client = createClient(transport);
+    const pending = makeRequests(buildRequest(client, 'GET'), 1000);
 
     return Promise.all(pending).then(results => {
       assert.equal(results.length, pending.length);
@@ -87,8 +98,96 @@ describe('Request collasing', () => {
     });
   });
 
+  it('does not collapse POST requests', () => {
+    const post = nock(host)
+      .post(path)
+      .times(10)
+      .socketDelay(2000)
+      .reply(201, simpleResponseBody);
+
+    const transport = collapse(new HttpTransport.defaultTransport());
+    const client = createClient(transport);
+    const pending = makeRequests(buildRequest(client, 'POST'), 10);
+
+    return Promise.all(pending).then(results => {
+      post.done();
+      assert.equal(results.length, pending.length);
+      pending.forEach(result => {
+        result.then(res => {
+          assert.equal(res.body, 'Illegitimi non carborundum');
+        });
+      });
+    });
+  });
+
+  it('does not collapse PUT requests', () => {
+    const put = nock(host)
+      .put(path)
+      .times(10)
+      .socketDelay(2000)
+      .reply(201, simpleResponseBody);
+
+    const transport = collapse(new HttpTransport.defaultTransport());
+    const client = createClient(transport);
+    const pending = makeRequests(buildRequest(client, 'PUT'), 10);
+
+    return Promise.all(pending).then(results => {
+      put.done();
+      assert.equal(results.length, pending.length);
+      pending.forEach(result => {
+        result.then(res => {
+          assert.equal(res.body, 'Illegitimi non carborundum');
+        });
+      });
+    });
+  });
+
+  it('does not collapse PATCH requests', () => {
+    const patch = nock(host)
+      .patch(path)
+      .times(10)
+      .socketDelay(2000)
+      .reply(201, simpleResponseBody);
+
+    const transport = collapse(new HttpTransport.defaultTransport());
+    const client = createClient(transport);
+    const pending = makeRequests(buildRequest(client, 'PATCH'), 10);
+
+    return Promise.all(pending).then(results => {
+      patch.done();
+      assert.equal(results.length, pending.length);
+      pending.forEach(result => {
+        result.then(res => {
+          assert.equal(res.body, 'Illegitimi non carborundum');
+        });
+      });
+    });
+  });
+
+  it('does not collapse DELETE requests', () => {
+    const del = nock(host)
+      .delete(path)
+      .times(10)
+      .socketDelay(2000)
+      .reply(201, simpleResponseBody);
+
+    const transport = collapse(new HttpTransport.defaultTransport());
+    const client = createClient(transport);
+    const pending = makeRequests(buildRequest(client, 'DELETE'), 10);
+
+    return Promise.all(pending).then(results => {
+      del.done();
+      assert.equal(results.length, pending.length);
+      pending.forEach(result => {
+        result.then(res => {
+          assert.equal(res.body, 'Illegitimi non carborundum');
+        });
+      });
+    });
+  });
+
   it('does not affect the middleware stack', () => {
-    api
+    nock(host)
       .get('/')
       .times(3)
       .socketDelay(2000)
@@ -138,7 +237,7 @@ describe('Request collasing', () => {
   });
 
   it('removes a successful request from the in flight lookup', () => {
-    api
+    nock(host)
       .get(path)
       .times(1)
       .socketDelay(2000)
@@ -157,8 +256,7 @@ describe('Request collasing', () => {
   });
 
   it('removes a failed request from the in flight lookup', () => {
-    nock.cleanAll();
-    api
+    nock(host)
       .get(path)
       .times(1)
       .socketDelay(2000)
@@ -175,9 +273,10 @@ describe('Request collasing', () => {
     });
   });
 
-  it('removes a request from the in flight look on error', () => {
-    nock.cleanAll();
-    api.get(path).replyWithError('when wrong!');
+  it('removes a request from the in flight lookup on error', () => {
+    nock(host)
+      .get(path)
+      .replyWithError('when wrong!');
 
     const transport = collapse(new HttpTransport.defaultTransport());
     const client = createClient(transport);
@@ -191,13 +290,13 @@ describe('Request collasing', () => {
   });
 
   it('ensure failed request returns same result for all', () => {
-    nock.cleanAll();
-    api
+    nock(host)
       .get(path)
       .times(1)
       .reply(500, simpleResponseBody);
 
-    const pending = makeRequests(createClient(), 100);
+    const client = createClient();
+    const pending = makeRequests(buildRequest(client, 'GET'), 100);
 
     return Promise.all(pending)
       .then(assert.ifError)
@@ -205,13 +304,12 @@ describe('Request collasing', () => {
   });
 
   it('includes query strings to determine if a request is unique', () => {
-    nock.cleanAll();
-    api
+    nock(host)
       .get(path)
       .times(1)
       .reply(200, simpleResponseBody);
 
-    api
+    nock(host)
       .get(path + '?someQueryString=someValue')
       .times(1)
       .reply(200, simpleResponseBody2);
