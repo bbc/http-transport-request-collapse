@@ -34,7 +34,9 @@ function toLowerCase() {
 }
 
 function createClient(transport) {
-  return HttpTransport.createBuilder(transport || new HttpTransport.defaultTransport)
+  return HttpTransport.createBuilder(
+    transport || new HttpTransport.defaultTransport()
+  )
     .use(toError())
     .createClient();
 }
@@ -42,18 +44,14 @@ function createClient(transport) {
 function makeRequests(client, n) {
   const pending = [];
   for (let i = 0; i < n; ++i) {
-    pending.push(client
-      .get(url)
-      .asResponse());
+    pending.push(client.get(url).asResponse());
   }
   return pending;
 }
 
 function assertAllFailed(pending) {
-  pending.forEach((result) => {
-    result
-      .then(assert.fail)
-      .catch(noop);
+  pending.forEach(result => {
+    result.then(assert.fail).catch(noop);
   });
 }
 
@@ -61,45 +59,47 @@ describe('Request collasing', () => {
   beforeEach(() => {
     nock.disableNetConnect();
     nock.cleanAll();
-    api.get(path).reply(200, simpleResponseBody).defaultReplyHeaders({
-      'Content-Type': 'text/html'
-    });
+    api
+      .get(path)
+      .reply(200, simpleResponseBody)
+      .defaultReplyHeaders({
+        'Content-Type': 'text/html'
+      });
   });
 
   it('suppresses duplicated requests at a given time', () => {
-    api.get(path)
+    api
+      .get(path)
       .times(1)
       .socketDelay(2000)
       .reply(200, simpleResponseBody);
 
-    const transport = collapse(new HttpTransport.defaultTransport);
+    const transport = collapse(new HttpTransport.defaultTransport());
     const pending = makeRequests(createClient(transport), 1000);
 
-    return Promise.all(pending)
-      .then((results) => {
-        assert.equal(results.length, pending.length);
-        pending.forEach((result) => {
-          result.then((res) => {
-            assert.equal(res.body, 'Illegitimi non carborundum');
-          });
+    return Promise.all(pending).then(results => {
+      assert.equal(results.length, pending.length);
+      pending.forEach(result => {
+        result.then(res => {
+          assert.equal(res.body, 'Illegitimi non carborundum');
         });
       });
+    });
   });
 
   it('does not affect the middleware stack', () => {
-    api.get('/')
+    api
+      .get('/')
       .times(3)
       .socketDelay(2000)
       .reply(200, simpleResponseBody);
 
-    const transport = collapse(new HttpTransport.defaultTransport);
+    const transport = collapse(new HttpTransport.defaultTransport());
     const client = HttpTransport.createBuilder(transport)
       .use(toError())
       .createClient();
 
-    const pending1 = client
-      .get(url)
-      .asResponse();
+    const pending1 = client.get(url).asResponse();
 
     const pending2 = client
       .use(toUpperCase())
@@ -121,40 +121,79 @@ describe('Request collasing', () => {
       .get(url)
       .asResponse();
 
-    return Promise.all([pending1, pending2, pending3, pending4, pending5])
-      .then((results) => {
-        assert.equal(results.length, 5);
-        assert.equal(results[0].body, 'Illegitimi non carborundum');
-        assert.equal(results[1].body, 'ILLEGITIMI NON CARBORUNDUM');
-        assert.equal(results[2].body, 'ILLEGITIMI NON CARBORUNDUM');
-        assert.equal(results[3].body, 'illegitimi non carborundum');
-        assert.equal(results[4].body, 'illegitimi non carborundum');
-      });
+    return Promise.all([
+      pending1,
+      pending2,
+      pending3,
+      pending4,
+      pending5
+    ]).then(results => {
+      assert.equal(results.length, 5);
+      assert.equal(results[0].body, 'Illegitimi non carborundum');
+      assert.equal(results[1].body, 'ILLEGITIMI NON CARBORUNDUM');
+      assert.equal(results[2].body, 'ILLEGITIMI NON CARBORUNDUM');
+      assert.equal(results[3].body, 'illegitimi non carborundum');
+      assert.equal(results[4].body, 'illegitimi non carborundum');
+    });
   });
 
-  it('ensure a completed request is removed from the map', () => {
-    api.get(path)
+  it('removes a successful request from the in flight lookup', () => {
+    api
+      .get(path)
       .times(1)
       .socketDelay(2000)
       .reply(200, simpleResponseBody);
 
-    const transport = collapse(new HttpTransport.defaultTransport);
+    const transport = collapse(new HttpTransport.defaultTransport());
     const client = createClient(transport);
 
     assert.equal(transport.getInflightCount(), 0); // ensure empty on start
 
-    const pending = client
-      .get(url)
-      .asResponse();
+    const pending = client.get(url).asResponse();
 
     return pending.then(() => {
       assert.equal(transport.getInflightCount(), 0);
     });
   });
 
+  it('removes a failed request from the in flight lookup', () => {
+    nock.cleanAll();
+    api
+      .get(path)
+      .times(1)
+      .socketDelay(2000)
+      .reply(500);
+
+    const transport = collapse(new HttpTransport.defaultTransport());
+    const client = createClient(transport);
+
+    assert.equal(transport.getInflightCount(), 0);
+    const pending = client.get(url).asResponse();
+
+    return pending.catch(noop).then(() => {
+      assert.equal(transport.getInflightCount(), 0);
+    });
+  });
+
+  it('removes a request from the in flight look on error', () => {
+    nock.cleanAll();
+    api.get(path).replyWithError('when wrong!');
+
+    const transport = collapse(new HttpTransport.defaultTransport());
+    const client = createClient(transport);
+
+    assert.equal(transport.getInflightCount(), 0);
+    const pending = client.get(url).asResponse();
+
+    return pending.catch(noop).then(() => {
+      assert.equal(transport.getInflightCount(), 0);
+    });
+  });
+
   it('ensure failed request returns same result for all', () => {
     nock.cleanAll();
-    api.get(path)
+    api
+      .get(path)
       .times(1)
       .reply(500, simpleResponseBody);
 
@@ -167,21 +206,21 @@ describe('Request collasing', () => {
 
   it('includes query strings to determine if a request is unique', () => {
     nock.cleanAll();
-    api.get(path)
+    api
+      .get(path)
       .times(1)
       .reply(200, simpleResponseBody);
 
-    api.get(path + '?someQueryString=someValue')
+    api
+      .get(path + '?someQueryString=someValue')
       .times(1)
       .reply(200, simpleResponseBody2);
 
-    const transport = collapse(new HttpTransport.defaultTransport);
+    const transport = collapse(new HttpTransport.defaultTransport());
     const client = createClient(transport);
 
     const requests = [];
-    const pending1 = client
-      .get(url)
-      .asResponse();
+    const pending1 = client.get(url).asResponse();
 
     const pending2 = client
       .query('someQueryString', 'someValue')
@@ -192,7 +231,7 @@ describe('Request collasing', () => {
 
     return Promise.all(requests)
       .catch(assert.ifError)
-      .then((results) => {
+      .then(results => {
         assert.equal(results.length, 2);
         assert.equal(results[0].body, simpleResponseBody);
         assert.equal(results[1].body, simpleResponseBody2);
