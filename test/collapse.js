@@ -164,6 +164,28 @@ describe('Request collapsing', () => {
     });
   });
 
+  it('does not collapse DELETE requests', () => {
+    const del = nock(host)
+      .delete(path)
+      .times(10)
+      .socketDelay(2000)
+      .reply(201, simpleResponseBody);
+
+    const transport = collapse(new HttpTransport.defaultTransport());
+    const client = createClient(transport);
+    const pending = makeRequests(buildRequest(client, 'DELETE'), 10);
+
+    return Promise.all(pending).then(results => {
+      del.done();
+      assert.equal(results.length, pending.length);
+      pending.forEach(result => {
+        result.then(res => {
+          assert.equal(res.body, 'Illegitimi non carborundum');
+        });
+      });
+    });
+  });
+
   it('does not affect the middleware stack', () => {
     nock(host)
       .get('/')
