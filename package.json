@@ -29,7 +29,7 @@
     "nock": "^9.0.22"
   },
   "dependencies": {
-    "@bbc/http-transport": "0.0.16",
+    "@bbc/http-transport": "0.0.18",
     "lodash": "^4.17.4"
   },
   "eslintConfig": {
