@@ -20,7 +20,7 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "@bbc/http-transport-to-error": "0.0.2",
+    "@bbc/http-transport-to-error": "^1.0.0",
     "chai": "^4.1.2",
     "eslint": "^4.11.0",
     "eslint-config-iplayer-es6": "^3.1.1",
@@ -29,7 +29,7 @@
     "nock": "^9.0.22"
   },
   "dependencies": {
-    "@bbc/http-transport": "0.0.18",
+    "@bbc/http-transport": "^1.0.0",
     "lodash": "^4.17.4"
   },
   "eslintConfig": {
