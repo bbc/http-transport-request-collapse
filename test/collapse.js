@@ -33,9 +33,7 @@ function toLowerCase() {
 }
 
 function createClient(transport) {
-  return HttpTransport.createBuilder(
-    transport || new HttpTransport.defaultTransport()
-  )
+  return HttpTransport.createBuilder(transport || new HttpTransport.defaultTransport())
     .use(toError())
     .createClient();
 }
@@ -57,7 +55,7 @@ function makeRequests(request, n) {
 }
 
 function assertAllFailed(pending) {
-  pending.forEach(result => {
+  pending.forEach((result) => {
     result.then(assert.fail).catch(noop);
   });
 }
@@ -88,10 +86,10 @@ describe('Request collapsing', () => {
     const client = createClient(transport);
     const pending = makeRequests(buildRequest(client, 'GET'), 1000);
 
-    return Promise.all(pending).then(results => {
+    return Promise.all(pending).then((results) => {
       assert.equal(results.length, pending.length);
-      pending.forEach(result => {
-        result.then(res => {
+      pending.forEach((result) => {
+        result.then((res) => {
           assert.equal(res.body, 'Illegitimi non carborundum');
         });
       });
@@ -109,11 +107,11 @@ describe('Request collapsing', () => {
     const client = createClient(transport);
     const pending = makeRequests(buildRequest(client, 'POST'), 10);
 
-    return Promise.all(pending).then(results => {
+    return Promise.all(pending).then((results) => {
       post.done();
       assert.equal(results.length, pending.length);
-      pending.forEach(result => {
-        result.then(res => {
+      pending.forEach((result) => {
+        result.then((res) => {
           assert.equal(res.body, 'Illegitimi non carborundum');
         });
       });
@@ -131,11 +129,11 @@ describe('Request collapsing', () => {
     const client = createClient(transport);
     const pending = makeRequests(buildRequest(client, 'PUT'), 10);
 
-    return Promise.all(pending).then(results => {
+    return Promise.all(pending).then((results) => {
       put.done();
       assert.equal(results.length, pending.length);
-      pending.forEach(result => {
-        result.then(res => {
+      pending.forEach((result) => {
+        result.then((res) => {
           assert.equal(res.body, 'Illegitimi non carborundum');
         });
       });
@@ -153,11 +151,11 @@ describe('Request collapsing', () => {
     const client = createClient(transport);
     const pending = makeRequests(buildRequest(client, 'PATCH'), 10);
 
-    return Promise.all(pending).then(results => {
+    return Promise.all(pending).then((results) => {
       patch.done();
       assert.equal(results.length, pending.length);
-      pending.forEach(result => {
-        result.then(res => {
+      pending.forEach((result) => {
+        result.then((res) => {
           assert.equal(res.body, 'Illegitimi non carborundum');
         });
       });
@@ -175,11 +173,11 @@ describe('Request collapsing', () => {
     const client = createClient(transport);
     const pending = makeRequests(buildRequest(client, 'DELETE'), 10);
 
-    return Promise.all(pending).then(results => {
+    return Promise.all(pending).then((results) => {
       del.done();
       assert.equal(results.length, pending.length);
-      pending.forEach(result => {
-        result.then(res => {
+      pending.forEach((result) => {
+        result.then((res) => {
           assert.equal(res.body, 'Illegitimi non carborundum');
         });
       });
@@ -220,13 +218,7 @@ describe('Request collapsing', () => {
       .get(url)
       .asResponse();
 
-    return Promise.all([
-      pending1,
-      pending2,
-      pending3,
-      pending4,
-      pending5
-    ]).then(results => {
+    return Promise.all([pending1, pending2, pending3, pending4, pending5]).then((results) => {
       assert.equal(results.length, 5);
       assert.equal(results[0].body, 'Illegitimi non carborundum');
       assert.equal(results[1].body, 'ILLEGITIMI NON CARBORUNDUM');
@@ -300,7 +292,7 @@ describe('Request collapsing', () => {
 
     return Promise.all(pending)
       .then(assert.ifError)
-      .catch(err => assertAllFailed(pending));
+      .catch(() => assertAllFailed(pending));
   });
 
   it('includes query strings to determine if a request is unique', () => {
@@ -329,7 +321,7 @@ describe('Request collapsing', () => {
 
     return Promise.all(requests)
       .catch(assert.ifError)
-      .then(results => {
+      .then((results) => {
         assert.equal(results.length, 2);
         assert.equal(results[0].body, simpleResponseBody);
         assert.equal(results[1].body, simpleResponseBody2);
