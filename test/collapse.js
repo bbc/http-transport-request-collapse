@@ -2,6 +2,7 @@
 
 const assert = require('chai').assert;
 const nock = require('nock');
+const sinon = require('sinon');
 
 const HttpTransport = require('@bbc/http-transport');
 const toError = require('@bbc/http-transport-to-error');
@@ -14,7 +15,9 @@ const path = '/';
 const simpleResponseBody = 'Illegitimi non carborundum';
 const simpleResponseBody2 = 'Illegitimi non carborundum2';
 
-function noop() {}
+const sandbox = sinon.sandbox.create();
+
+function noop() { }
 
 function toUpperCase() {
   return (ctx, next) => {
@@ -326,5 +329,53 @@ describe('Request collapsing', () => {
         assert.equal(results[0].body, simpleResponseBody);
         assert.equal(results[1].body, simpleResponseBody2);
       });
+  });
+
+  describe('stats', () => {
+    const stats = {};
+
+    beforeEach(() => {
+      stats.increment = sandbox.stub();
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('sends stats when making a request', () => {
+      nock(host)
+        .get(path)
+        .times(1)
+        .socketDelay(2000)
+        .reply(200, simpleResponseBody);
+
+      const transport = collapse(new HttpTransport.defaultTransport(), { stats });
+      const client = createClient(transport);
+      const pending = client.get(url).asResponse();
+
+      return pending
+        .catch(assert.ifError)
+        .then(() => {
+          sinon.assert.calledWith(stats.increment, 'http.collapsed.requests');
+        });
+    });
+
+    it('sends stats when returning inflight response', () => {
+      nock(host)
+        .get(path)
+        .times(2)
+        .socketDelay(2000)
+        .reply(200, simpleResponseBody);
+
+      const transport = collapse(new HttpTransport.defaultTransport(), { stats });
+      const client = createClient(transport);
+      const pending = makeRequests(buildRequest(client, 'GET'), 2);
+
+      return Promise.all(pending)
+        .catch(assert.ifError)
+        .then(() => {
+          sinon.assert.calledWith(stats.increment, 'http.collapsed.inflight');
+        });
+    });
   });
 });
