@@ -332,7 +332,6 @@ describe('Request collapsing', () => {
 
   describe('collasping window', () => {
     it('expands collapsing window', () => {
-      let counter = 0;
       nock(host).get(path + '?anotherQueryString=someValue').times(1).reply(200, 'RESPONSE1');
 
       const collapsingWindow = 100;
