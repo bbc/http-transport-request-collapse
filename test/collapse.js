@@ -242,7 +242,6 @@ describe('Request collapsing', () => {
     const client = createClient(transport);
 
     assert.equal(transport.getInflightCount(), 0); // ensure empty on start
-
     const pending = client.get(url).asResponse();
 
     return pending.then(() => {
@@ -329,6 +328,35 @@ describe('Request collapsing', () => {
         assert.equal(results[0].body, simpleResponseBody);
         assert.equal(results[1].body, simpleResponseBody2);
       });
+  });
+
+  describe('collasping window', () => {
+    it('expands collapsing window', () => {
+      nock(host).get(path + '?anotherQueryString=someValue').times(1).reply(200, 'RESPONSE1');
+
+      const collapsingWindow = 100;
+      const coll = collapse(new HttpTransport.defaultTransport(), { collapsingWindow });
+      const client = createClient(coll);
+
+      const first = client
+        .query('anotherQueryString', 'someValue')
+        .get(url)
+        .asResponse();
+
+      return first
+        .then(() => {
+          nock(host).get(path + '?anotherQueryString=someValue').reply(200, 'RESPONSE2');
+
+          const second = client
+            .query('anotherQueryString', 'someValue')
+            .get(url)
+            .asResponse();
+
+          return second.then((res) => {
+            assert.equal(res.body, 'RESPONSE1');
+          });
+        });
+    });
   });
 
   describe('stats', () => {
