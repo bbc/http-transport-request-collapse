@@ -1,3 +1,6 @@
 'use strict';
 
-module.exports = require('./lib/collapse');
+module.exports = {
+  wrapper: require('./lib/wrapper'),
+  plugin: require('./lib/plugin')
+};

@@ -6,7 +6,7 @@ const sinon = require('sinon');
 
 const HttpTransport = require('@bbc/http-transport');
 const toError = require('@bbc/http-transport-to-error');
-const collapse = require('../lib/collapse');
+const collapse = require('../lib/wrapper');
 
 const url = 'http://www.example.com/';
 const host = 'http://www.example.com';
