@@ -1,6 +1,6 @@
 'use strict';
 
 module.exports = {
-  wrapper: require('./lib/wrapper'),
-  plugin: require('./lib/plugin')
+  events: require('./lib/plugin').events,
+  middleware: require('./lib/plugin').middleware
 };
