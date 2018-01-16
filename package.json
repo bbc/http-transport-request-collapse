@@ -1,6 +1,6 @@
 {
   "name": "@bbc/http-transport-request-collapse",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "collapse requets",
   "main": "index.js",
   "scripts": {
