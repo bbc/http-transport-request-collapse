@@ -67,10 +67,7 @@ describe('Request collapsing', () => {
     nock(host)
       .get(path)
       .times(1)
-      .reply(200, simpleResponseBody)
-      .defaultReplyHeaders({
-        'Content-Type': 'text/html'
-      });
+      .reply(200, simpleResponseBody);
 
     const client = createClient();
 
@@ -78,10 +75,8 @@ describe('Request collapsing', () => {
 
     return Promise.all(pending).then((results) => {
       assert.equal(results.length, pending.length);
-      pending.forEach((result) => {
-        result.then((res) => {
-          assert.equal(res.body, simpleResponseBody);
-        });
+      results.forEach((res) => {
+        assert.equal(res.body, simpleResponseBody);
       });
     });
   });
@@ -90,16 +85,49 @@ describe('Request collapsing', () => {
     const api = nock(host)
       .get(path)
       .twice()
-      .reply(200, simpleResponseBody)
-      .defaultReplyHeaders({
-        'Content-Type': 'text/html'
-      });
+      .reply(200, simpleResponseBody);
 
     const client = createClient();
 
     await Promise.all(makeRequests(buildRequest(client, 'GET'), 1));
     await Promise.all(makeRequests(buildRequest(client, 'GET'), 1));
     assert.ok(api.isDone());
+  });
+
+  it('removes the collapsed request key on error', async () => {
+    const api1 = nock(host)
+      .get(path)
+      .once()
+      .replyWithError('when wrong!');
+
+    const api2 = nock(host)
+      .get(path)
+      .once()
+      .reply(200, simpleResponseBody);
+
+    const client = createClient();
+
+    let assertedAll = false;
+
+    await client.get(url).asResponse().catch(async () => {
+      assert.ok(api1.isDone());
+
+      await new Promise((resolve) => setTimeout(resolve, 25));
+
+      return client
+        .get(url)
+        .asResponse()
+        .then((res) => {
+          assert.ok(api2.isDone());
+          assert.equal(res.body, simpleResponseBody);
+          assertedAll = true;
+        })
+        .catch((err) => {
+          assert.ifError(err);
+        });
+    });
+
+    assert.isTrue(assertedAll, 'Did not catch error');
   });
 
   it('keeps a window of collapsed requests', async () => {
