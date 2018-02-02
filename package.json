@@ -8,7 +8,7 @@
     "lint": "eslint ."
   },
   "engines": {
-    "node": ">=7.0.0"
+    "node": ">=6.0.0"
   },
   "keywords": [
     "http-transport",
