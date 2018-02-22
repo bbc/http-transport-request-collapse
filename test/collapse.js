@@ -45,7 +45,7 @@ describe('Request collapsing', () => {
     nock.cleanAll();
   });
 
-  it('behaves as a plugin', () => {
+  it('behaves as a plugin', async () => {
     nock(host)
       .get(path)
       .reply(200, simpleResponseBody)
@@ -54,30 +54,26 @@ describe('Request collapsing', () => {
       });
 
     const client = createClient();
-
-    return client
+    const res = await client
       .get(url)
-      .asResponse()
-      .then((res) => {
-        assert.equal(res.statusCode, 200);
-      });
+      .asResponse();
+
+    assert.equal(res.statusCode, 200);
   });
 
-  it('collapses requests', () => {
+  it('collapses requests', async () => {
     nock(host)
       .get(path)
       .times(1)
       .reply(200, simpleResponseBody);
 
     const client = createClient();
+    const pending = makeRequests(buildRequest(client, 'GET'));
+    const results = await Promise.all(pending, 20);
 
-    const pending = makeRequests(buildRequest(client, 'GET'), 20);
-
-    return Promise.all(pending).then((results) => {
-      assert.equal(results.length, pending.length);
-      results.forEach((res) => {
-        assert.equal(res.body, simpleResponseBody);
-      });
+    assert.equal(results.length, pending.length);
+    results.forEach((res) => {
+      assert.equal(res.body, simpleResponseBody);
     });
   });
 
@@ -88,9 +84,9 @@ describe('Request collapsing', () => {
       .reply(200, simpleResponseBody);
 
     const client = createClient();
+    await Promise.all(makeRequests(buildRequest(client, 'GET'), 1));
+    await Promise.all(makeRequests(buildRequest(client, 'GET'), 1));
 
-    await Promise.all(makeRequests(buildRequest(client, 'GET'), 1));
-    await Promise.all(makeRequests(buildRequest(client, 'GET'), 1));
     assert.ok(api.isDone());
   });
 
@@ -108,24 +104,20 @@ describe('Request collapsing', () => {
     const client = createClient();
 
     let assertedAll = false;
-
-    await client.get(url).asResponse().catch(async () => {
+    try {
+      await client.get(url).asResponse();
+    } catch (err) {
       assert.ok(api1.isDone());
-
       await new Promise((resolve) => setTimeout(resolve, 25));
 
-      return client
+      const res = await client
         .get(url)
-        .asResponse()
-        .then((res) => {
-          assert.ok(api2.isDone());
-          assert.equal(res.body, simpleResponseBody);
-          assertedAll = true;
-        })
-        .catch((err) => {
-          assert.ifError(err);
-        });
-    });
+        .asResponse();
+
+      assert.ok(api2.isDone());
+      assert.equal(res.body, simpleResponseBody);
+      assertedAll = true;
+    }
 
     assert.isTrue(assertedAll, 'Did not catch error');
   });
@@ -142,23 +134,20 @@ describe('Request collapsing', () => {
     const client = createClient({
       collapsingWindow: 50
     });
-
-    return client
+    const res = await client
       .get(url)
-      .asResponse()
-      .then(async (res) => {
-        assert.equal(res.body, simpleResponseBody);
-        await new Promise((resolve) => setTimeout(resolve, 25));
-        return client
-          .get(url)
-          .asResponse()
-          .then((res) => {
-            assert.equal(res.body, simpleResponseBody);
-          });
-      });
+      .asResponse();
+
+    assert.equal(res.body, simpleResponseBody);
+    await new Promise((resolve) => setTimeout(resolve, 25));
+    const res2 = await client
+      .get(url)
+      .asResponse();
+
+    assert.equal(res2.body, simpleResponseBody);
   });
 
-  it('includes query strings to determine if a request is unique', () => {
+  it('includes query strings to determine if a request is unique', async () => {
     nock(host)
       .get(path)
       .times(1)
@@ -170,136 +159,109 @@ describe('Request collapsing', () => {
       .reply(200, simpleResponseBody2);
 
     const client = createClient();
-
     const requests = [];
     const pending1 = client.get(url).asResponse();
-
     const pending2 = client
       .query('someQueryString', 'someValue')
       .get(url)
       .asResponse();
 
     requests.push(pending1, pending2);
+    const results = await Promise.all(requests);
 
-    return Promise.all(requests)
-      .catch(assert.ifError)
-      .then((results) => {
-        assert.equal(results.length, 2);
-        assert.equal(results[0].body, simpleResponseBody);
-        assert.equal(results[1].body, simpleResponseBody2);
-      });
+    assert.equal(results.length, 2);
+    assert.equal(results[0].body, simpleResponseBody);
+    assert.equal(results[1].body, simpleResponseBody2);
   });
 
   describe('Write based HTTP Method', () => {
-    it('does not collapse POST requests', () => {
+    it('does not collapse POST requests', async () => {
       const api = nock(host)
         .post(path)
         .twice()
         .reply(200, simpleResponseBody);
 
       const client = createClient();
-
       const pending = makeRequests(buildRequest(client, 'POST'), 2);
+      const results = await Promise.all(pending);
 
-      return Promise.all(pending).then((results) => {
-        assert.ok(api.isDone());
-        assert.equal(results.length, pending.length);
-
-        pending.forEach((result) => {
-          result.then((res) => {
-            assert.equal(res.body, simpleResponseBody);
-          });
-        });
+      assert.ok(api.isDone());
+      assert.equal(results.length, pending.length);
+      results.forEach((result) => {
+        assert.equal(result.body, simpleResponseBody);
       });
     });
 
-    it('does not collapse PUT requests', () => {
+    it('does not collapse PUT requests', async () => {
       const api = nock(host)
         .put(path)
         .twice()
         .reply(200, simpleResponseBody);
 
       const client = createClient();
-
       const pending = makeRequests(buildRequest(client, 'PUT'), 2);
+      const results = await Promise.all(pending);
 
-      return Promise.all(pending).then((results) => {
-        assert.ok(api.isDone());
-        assert.equal(results.length, pending.length);
-
-        pending.forEach((result) => {
-          result.then((res) => {
-            assert.equal(res.body, simpleResponseBody);
-          });
-        });
+      assert.ok(api.isDone());
+      assert.equal(results.length, pending.length);
+      results.forEach((result) => {
+        assert.equal(result.body, simpleResponseBody);
       });
     });
 
-    it('does not collapse PATCH requests', () => {
+    it('does not collapse PATCH requests', async () => {
       const api = nock(host)
         .patch(path)
         .twice()
         .reply(200, simpleResponseBody);
 
       const client = createClient();
-
       const pending = makeRequests(buildRequest(client, 'PATCH'), 2);
+      const results = await Promise.all(pending);
 
-      return Promise.all(pending).then((results) => {
-        assert.ok(api.isDone());
-        assert.equal(results.length, pending.length);
-
-        pending.forEach((result) => {
-          result.then((res) => {
-            assert.equal(res.body, simpleResponseBody);
-          });
-        });
+      assert.ok(api.isDone());
+      assert.equal(results.length, pending.length);
+      results.forEach((result) => {
+        assert.equal(result.body, simpleResponseBody);
       });
     });
 
-    it('does not collapse DELETE requests', () => {
+    it('does not collapse DELETE requests', async () => {
       const api = nock(host)
         .delete(path)
         .twice()
         .reply(200, simpleResponseBody);
 
       const client = createClient();
-
       const pending = makeRequests(buildRequest(client, 'DELETE'), 2);
+      const results = await Promise.all(pending);
 
-      return Promise.all(pending).then((results) => {
-        assert.ok(api.isDone());
-        assert.equal(results.length, pending.length);
-
-        pending.forEach((result) => {
-          result.then((res) => {
-            assert.equal(res.body, simpleResponseBody);
-          });
-        });
+      assert.ok(api.isDone());
+      assert.equal(results.length, pending.length);
+      results.forEach((result) => {
+        assert.equal(result.body, simpleResponseBody);
       });
     });
 
   });
 
   describe('Events', () => {
-    it('emits an event when making a request', () => {
+    it('emits an event when making a request', async () => {
       nock(host)
         .get(path)
         .times(1)
         .reply(200, simpleResponseBody);
-
-      const client = createClient();
 
       let emitCount = 0;
       collapseEvents.on('collapsed', () => {
         emitCount++;
       });
 
+      const client = createClient();
       const pending = makeRequests(buildRequest(client, 'GET'), 20);
+      await Promise.all(pending);
 
-      return Promise.all(pending).then(() => {
-        assert.equal(emitCount, 19);
-      });
+      assert.equal(emitCount, 19);
     });
   });
 });
