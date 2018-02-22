@@ -4,8 +4,8 @@ const assert = require('chai').assert;
 const nock = require('nock');
 
 const HttpTransport = require('@bbc/http-transport');
-const collapse = require('../lib/plugin').middleware;
-const collapseEvents = require('../lib/plugin').events;
+const collapse = require('../lib/collapse').middleware;
+const collapseEvents = require('../lib/collapse').events;
 
 const url = 'http://www.example.com/';
 const host = 'http://www.example.com';
