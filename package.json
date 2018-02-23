@@ -1,14 +1,14 @@
 {
   "name": "@bbc/http-transport-request-collapse",
-  "version": "2.0.3",
-  "description": "collapse requets",
+  "version": "3.0.0",
+  "description": "collapse requests",
   "main": "index.js",
   "scripts": {
     "test": "mocha && npm run lint",
     "lint": "eslint ."
   },
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=8.0.0"
   },
   "keywords": [
     "http-transport",
@@ -27,7 +27,7 @@
     "nock": "^9.0.22"
   },
   "dependencies": {
-    "@bbc/http-transport": "^1.0.0",
+    "@bbc/http-transport": "^2.0.0",
     "lodash": "^4.17.4"
   },
   "eslintConfig": {

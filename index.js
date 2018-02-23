@@ -1,6 +1,7 @@
 'use strict';
 
+const path = './lib/collapse';
 module.exports = {
-  events: require('./lib/plugin').events,
-  middleware: require('./lib/plugin').middleware
+  events: require(path).events,
+  middleware: require(path).middleware
 };
