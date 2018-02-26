@@ -12,7 +12,7 @@ npm install --save http-transport-request-collapse
 
 ```js
 const HttpTransport = require('@bbc/http-transport');
-const collapse = require('http-transport-request-collapse').middleware;
+const collapse = require('@bbc/http-transport-request-collapse').middleware;
 
 const client = HttpTransport
   .createBuilder()
