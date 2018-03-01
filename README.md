@@ -5,7 +5,7 @@ Merges duplicate requests into a single request
 ## Installation
 
 ```
-npm install --save http-transport-request-collapse
+npm install --save @bbc/http-transport-request-collapse
 ```
 
 ## Usage
