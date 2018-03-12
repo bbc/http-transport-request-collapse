@@ -20,6 +20,9 @@ const client = HttpTransport
   .createClient();
 ```
 
+## Key generation
+⚠️ 🔥 Requests are de-dupded by creating a cache key from the request. Currently, this is **only based on the url** 🔥 ⚠️
+
 ## Test
 
 ```
