@@ -30,6 +30,9 @@
     "@bbc/http-transport": "^2.0.0",
     "lodash": "^4.17.4"
   },
+  "peerDependencies": {
+    "@bbc/http-transport": "3.x"
+  },
   "eslintConfig": {
     "extends": "iplayer-es6",
     "parserOptions": {
