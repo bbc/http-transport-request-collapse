@@ -246,7 +246,7 @@ describe('Request collapsing', () => {
   });
 
   describe('Events', () => {
-    it('emits an event when making a request', async () => {
+    it('emits a generic event when making a request', async () => {
       nock(host)
         .get(path)
         .times(1)
@@ -258,6 +258,25 @@ describe('Request collapsing', () => {
       });
 
       const client = createClient();
+      const pending = makeRequests(buildRequest(client, 'GET'), 20);
+      await Promise.all(pending);
+
+      assert.equal(emitCount, 19);
+    });
+
+    it('emits a named collasping event when making a request', async () => {
+      nock(host)
+        .get(path)
+        .times(1)
+        .reply(200, simpleResponseBody);
+
+      const nomine = 'crazy-taff';
+      let emitCount = 0;
+      collapseEvents.on(`collapsed-${nomine}`, () => {
+        emitCount++;
+      });
+
+      const client = createClient({ eventName: nomine });
       const pending = makeRequests(buildRequest(client, 'GET'), 20);
       await Promise.all(pending);
 
