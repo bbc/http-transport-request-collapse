@@ -20,15 +20,15 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
+    "@bbc/http-transport": "^3.5.1",
     "chai": "^4.1.2",
-    "eslint": "^4.11.0",
+    "eslint": "^4.19.1",
     "eslint-config-iplayer-es6": "^3.1.1",
-    "mocha": "^3.3.0",
+    "mocha": "^5.2.0",
     "nock": "^9.0.22"
   },
   "dependencies": {
-    "@bbc/http-transport": "^2.0.0",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.11"
   },
   "peerDependencies": {
     "@bbc/http-transport": "3.x"
