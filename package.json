@@ -4,8 +4,9 @@
   "description": "collapse requests",
   "main": "index.js",
   "scripts": {
-    "test": "mocha && npm run lint",
-    "lint": "eslint ."
+    "test": "mocha",
+    "lint": "eslint .",
+    "posttest": "npm run lint"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -20,23 +21,20 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "@bbc/http-transport": "^3.5.1",
+    "@bbc/http-transport": "^4.3.0",
     "chai": "^4.1.2",
-    "eslint": "^4.19.1",
-    "eslint-config-iplayer-es6": "^3.1.1",
+    "eslint": "^8.50.0",
+    "eslint-config-iplayer": "^7.0.0",
     "mocha": "^5.2.0",
-    "nock": "^9.0.22"
+    "nock": "^13.3.3"
   },
   "dependencies": {
     "lodash": "^4.17.15"
   },
   "peerDependencies": {
-    "@bbc/http-transport": "3.x"
+    "@bbc/http-transport": "^4.3.0"
   },
   "eslintConfig": {
-    "extends": "iplayer-es6",
-    "parserOptions": {
-      "ecmaVersion": 2017
-    }
+    "extends": "iplayer"
   }
 }

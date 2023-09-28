@@ -1,6 +1,6 @@
 [![NPM downloads](https://img.shields.io/npm/dm/@bbc/http-transport-request-collapse.svg?style=flat)](https://npmjs.org/package/@bbc/http-transport-rate-limiter)
 ![npm](https://img.shields.io/npm/v/@bbc/http-transport-request-collapse.svg)
- ![license](https://img.shields.io/badge/license-MIT-blue.svg) 
+![license](https://img.shields.io/badge/license-MIT-blue.svg) 
 ![github-issues](https://img.shields.io/github/issues/bbc/http-transport-request-collapse.svg)
 ![stars](https://img.shields.io/github/stars/bbc/http-transport-request-collapse.svg)
 ![forks](https://img.shields.io/github/forks/bbc/http-transport-request-collapse.svg)
