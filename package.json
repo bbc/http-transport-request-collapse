@@ -4,9 +4,8 @@
   "description": "collapse requests",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "lint": "eslint .",
-    "posttest": "npm run lint"
+    "test": "mocha && npm run lint",
+    "lint": "eslint ."
   },
   "engines": {
     "node": ">=8.0.0"
