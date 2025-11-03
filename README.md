@@ -1,5 +1,5 @@
-[![NPM downloads](https://img.shields.io/npm/dm/@bbc/http-transport-request-collapse.svg?style=flat)](https://npmjs.org/package/@bbc/http-transport-rate-limiter)
-![npm](https://img.shields.io/npm/v/@bbc/http-transport-request-collapse.svg)
+[![NPM downloads](https://img.shields.io/pnpm/dm/@bbc/http-transport-request-collapse.svg?style=flat)](https://npmjs.org/package/@bbc/http-transport-rate-limiter)
+![pnpm](https://img.shields.io/pnpm/v/@bbc/http-transport-request-collapse.svg)
 ![license](https://img.shields.io/badge/license-MIT-blue.svg) 
 ![github-issues](https://img.shields.io/github/issues/bbc/http-transport-request-collapse.svg)
 ![stars](https://img.shields.io/github/stars/bbc/http-transport-request-collapse.svg)
@@ -13,7 +13,7 @@ Merges duplicate requests into a single request
 ## Installation
 
 ```
-npm install --save @bbc/http-transport-request-collapse
+pnpm install --save @bbc/http-transport-request-collapse
 ```
 
 ## Usage
@@ -34,5 +34,5 @@ const client = HttpTransport
 ## Test
 
 ```
-npm test
+pnpm test
 ```
