@@ -13,7 +13,7 @@ Merges duplicate requests into a single request
 ## Installation
 
 ```
-npm install --save @bbc/http-transport-request-collapse
+pnpm install --save @bbc/http-transport-request-collapse
 ```
 
 ## Usage
@@ -34,5 +34,5 @@ const client = HttpTransport
 ## Test
 
 ```
-npm test
+pnpm test
 ```
