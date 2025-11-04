@@ -4,7 +4,7 @@
   "description": "collapse requests",
   "main": "index.js",
   "scripts": {
-    "test": "mocha && npm run lint",
+    "test": "mocha && pnpm run lint",
     "lint": "eslint ."
   },
   "engines": {
