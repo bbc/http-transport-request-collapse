@@ -31,3 +31,9 @@ hoist: false
 # Configure pnpm for non-monorepos
 packages:
   - "."
+
+# Hoist eslint plugins for compatibility
+publicHoistPattern:
+  - "eslint-plugin-*"
+  - "@eslint/*"
+  - "@typescript-eslint/*"
