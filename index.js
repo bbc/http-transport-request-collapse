@@ -1,5 +1,3 @@
-'use strict';
-
 const collapse = require('./lib/collapse');
 
 module.exports = {

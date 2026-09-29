@@ -1,5 +1,3 @@
-'use strict';
-
 const { expect } = require('@jest/globals');
 const nock = require('nock');
 
@@ -15,9 +13,7 @@ const simpleResponseBody = 'Du mich auch';
 const simpleResponseBody2 = 'Ich dich nicht';
 
 function createClient(opts) {
-  return HttpTransport.createBuilder()
-    .use(collapse(opts))
-    .createClient();
+  return HttpTransport.createBuilder().use(collapse(opts)).createClient();
 }
 
 function buildRequest(client, method) {
@@ -46,26 +42,18 @@ describe('Request collapsing', () => {
   });
 
   it('behaves as a plugin', async () => {
-    nock(host)
-      .get(path)
-      .reply(200, simpleResponseBody)
-      .defaultReplyHeaders({
-        'Content-Type': 'text/html'
-      });
+    nock(host).get(path).reply(200, simpleResponseBody).defaultReplyHeaders({
+      'Content-Type': 'text/html'
+    });
 
     const client = createClient();
-    const res = await client
-      .get(url)
-      .asResponse();
+    const res = await client.get(url).asResponse();
 
     expect(res.statusCode).toBe(200);
   });
 
   it('collapses requests', async () => {
-    nock(host)
-      .get(path)
-      .times(1)
-      .reply(200, simpleResponseBody);
+    nock(host).get(path).times(1).reply(200, simpleResponseBody);
 
     const client = createClient();
     const pending = makeRequests(buildRequest(client, 'GET'));
@@ -78,10 +66,7 @@ describe('Request collapsing', () => {
   });
 
   it('removes the collapsed request key after a successful response', async () => {
-    const api = nock(host)
-      .get(path)
-      .twice()
-      .reply(200, simpleResponseBody);
+    const api = nock(host).get(path).twice().reply(200, simpleResponseBody);
 
     const client = createClient();
     await Promise.all(makeRequests(buildRequest(client, 'GET'), 1));
@@ -91,28 +76,20 @@ describe('Request collapsing', () => {
   });
 
   it('removes the collapsed request key on error', async () => {
-    const api1 = nock(host)
-      .get(path)
-      .once()
-      .replyWithError('when wrong!');
+    const api1 = nock(host).get(path).once().replyWithError('when wrong!');
 
-    const api2 = nock(host)
-      .get(path)
-      .once()
-      .reply(200, simpleResponseBody);
+    const api2 = nock(host).get(path).once().reply(200, simpleResponseBody);
 
     const client = createClient();
 
     let assertedAll = false;
     try {
       await client.get(url).asResponse();
-    } catch (err) {
+    } catch {
       expect(api1.isDone()).toBe(true);
       await new Promise((resolve) => setTimeout(resolve, 25));
 
-      const res = await client
-        .get(url)
-        .asResponse();
+      const res = await client.get(url).asResponse();
 
       expect(api2.isDone()).toBe(true);
       expect(res.body).toBe(simpleResponseBody);
@@ -134,27 +111,20 @@ describe('Request collapsing', () => {
     const client = createClient({
       collapsingWindow: 50
     });
-    const res = await client
-      .get(url)
-      .asResponse();
+    const res = await client.get(url).asResponse();
 
     expect(res.body).toBe(simpleResponseBody);
     await new Promise((resolve) => setTimeout(resolve, 25));
-    const res2 = await client
-      .get(url)
-      .asResponse();
+    const res2 = await client.get(url).asResponse();
 
     expect(res2.body).toBe(simpleResponseBody);
   });
 
   it('includes query strings to determine if a request is unique', async () => {
-    nock(host)
-      .get(path)
-      .times(1)
-      .reply(200, simpleResponseBody);
+    nock(host).get(path).times(1).reply(200, simpleResponseBody);
 
     nock(host)
-      .get(path + '?someQueryString=someValue')
+      .get(`${path}?someQueryString=someValue`)
       .times(1)
       .reply(200, simpleResponseBody2);
 
@@ -176,10 +146,7 @@ describe('Request collapsing', () => {
 
   describe('Write based HTTP Method', () => {
     it('does not collapse POST requests', async () => {
-      const api = nock(host)
-        .post(path)
-        .twice()
-        .reply(200, simpleResponseBody);
+      const api = nock(host).post(path).twice().reply(200, simpleResponseBody);
 
       const client = createClient();
       const pending = makeRequests(buildRequest(client, 'POST'), 2);
@@ -193,10 +160,7 @@ describe('Request collapsing', () => {
     });
 
     it('does not collapse PUT requests', async () => {
-      const api = nock(host)
-        .put(path)
-        .twice()
-        .reply(200, simpleResponseBody);
+      const api = nock(host).put(path).twice().reply(200, simpleResponseBody);
 
       const client = createClient();
       const pending = makeRequests(buildRequest(client, 'PUT'), 2);
@@ -210,10 +174,7 @@ describe('Request collapsing', () => {
     });
 
     it('does not collapse PATCH requests', async () => {
-      const api = nock(host)
-        .patch(path)
-        .twice()
-        .reply(200, simpleResponseBody);
+      const api = nock(host).patch(path).twice().reply(200, simpleResponseBody);
 
       const client = createClient();
       const pending = makeRequests(buildRequest(client, 'PATCH'), 2);
@@ -242,15 +203,11 @@ describe('Request collapsing', () => {
         expect(result.body).toBe(simpleResponseBody);
       });
     });
-
   });
 
   describe('Events', () => {
     it('emits a generic event when making a request', async () => {
-      nock(host)
-        .get(path)
-        .times(1)
-        .reply(200, simpleResponseBody);
+      nock(host).get(path).times(1).reply(200, simpleResponseBody);
 
       let emitCount = 0;
       collapseEvents.on('collapsed', () => {
@@ -265,10 +222,7 @@ describe('Request collapsing', () => {
     });
 
     it('emits a named collasping event when making a request', async () => {
-      nock(host)
-        .get(path)
-        .times(1)
-        .reply(200, simpleResponseBody);
+      nock(host).get(path).times(1).reply(200, simpleResponseBody);
 
       const nomine = 'crazy-taff';
       let emitCount = 0;
