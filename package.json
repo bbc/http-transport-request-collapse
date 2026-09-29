@@ -4,7 +4,7 @@
   "description": "collapse requests",
   "main": "index.js",
   "scripts": {
-    "test": "mocha && pnpm run lint",
+    "test": "jest --runInBand && pnpm run lint",
     "lint": "eslint ."
   },
   "engines": {
@@ -21,10 +21,9 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@bbc/http-transport": "^4.3.0",
-    "chai": "^4.1.2",
     "eslint": "^8.50.0",
     "eslint-config-iplayer": "^7.0.0",
-    "mocha": "^5.2.0",
+    "jest": "^30.1.3",
     "nock": "^13.3.3"
   },
   "dependencies": {
@@ -35,5 +34,10 @@
   },
   "eslintConfig": {
     "extends": "iplayer"
+  },
+  "jest": {
+    "testMatch": [
+      "<rootDir>/test/**/*.js"
+    ]
   }
 }
