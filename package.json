@@ -26,9 +26,6 @@
     "jest": "^30.1.3",
     "nock": "^13.3.3"
   },
-  "dependencies": {
-    "lodash": "^4.17.15"
-  },
   "peerDependencies": {
     "@bbc/http-transport": "^3 || ^4"
   },
