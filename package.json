@@ -4,11 +4,11 @@
   "description": "collapse requests",
   "main": "index.js",
   "scripts": {
-    "test": "mocha && pnpm run lint",
-    "lint": "eslint ."
+    "test": "jest --runInBand && pnpm run lint",
+    "lint": "biome check ."
   },
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=24.0.0"
   },
   "keywords": [
     "http-transport",
@@ -20,20 +20,17 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
-    "@bbc/http-transport": "^4.3.0",
-    "chai": "^4.1.2",
-    "eslint": "^8.50.0",
-    "eslint-config-iplayer": "^7.0.0",
-    "mocha": "^5.2.0",
+    "@bbc/http-transport": "^5.0.1",
+    "@biomejs/biome": "^2.5.14",
+    "jest": "^30.1.3",
     "nock": "^13.3.3"
   },
-  "dependencies": {
-    "lodash": "^4.17.15"
-  },
   "peerDependencies": {
-    "@bbc/http-transport": "^3 || ^4"
+    "@bbc/http-transport": "^5.0.0"
   },
-  "eslintConfig": {
-    "extends": "iplayer"
+  "jest": {
+    "testMatch": [
+      "<rootDir>/test/**/*.js"
+    ]
   }
 }

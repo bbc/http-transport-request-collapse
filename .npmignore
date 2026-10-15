@@ -1,1 +1,19 @@
+# CI/CD
 .github
+
+# Tests
+test
+*.test.js
+
+# Linting/formatting config
+biome.json
+
+# Package manager / workspace config
+pnpm-lock.yaml
+pnpm-workspace.yaml
+.npmrc
+
+# Editor/OS artifacts
+.vscode
+.idea
+.DS_Store

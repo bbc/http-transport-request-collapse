@@ -1,4 +1,4 @@
- # This config was generated using ibl-scripts
+# This config was generated using ibl-scripts
 
 # Dependency Resiliency
 
@@ -31,9 +31,3 @@ hoist: false
 # Configure pnpm for non-monorepos
 packages:
   - "."
-
-# Hoist eslint plugins for compatibility
-publicHoistPattern:
-  - "eslint-plugin-*"
-  - "@eslint/*"
-  - "@typescript-eslint/*"
